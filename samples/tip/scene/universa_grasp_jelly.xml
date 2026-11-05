@@ -1,0 +1,224 @@
+<mujoco model="universa_grasp_jelly">
+  <compiler angle="radian" autolimits="true" meshdir="../assets"/>
+  <option gravity="0 0 -9.81" timestep="0.001" integrator="implicitfast" solver="Newton"
+          cone="elliptic" impratio="10" iterations="100" tolerance="1e-10"/>
+
+  <extension>
+    <plugin plugin="tip.tactile.universa"/>
+  </extension>
+
+  <default>
+    <default class="2f85">
+      <mesh scale="0.001 0.001 0.001"/>
+      <general biastype="affine"/>
+      <joint axis="1 0 0"/>
+      <default class="driver">
+        <joint range="0 0.8" armature="0.005" damping="0.1" limited="true" solimplimit="0.95 0.99 0.001" solreflimit="0.005 1"/>
+      </default>
+      <default class="follower">
+        <joint range="-0.872664 0.872664" armature="0.001" pos="0 -0.018 0.0065" solimplimit="0.95 0.99 0.001" solreflimit="0.005 1"/>
+      </default>
+      <default class="spring_link">
+        <joint range="-0.29670597283 0.8" armature="0.001" stiffness="0.05" springref="2.62" damping="0.00125"/>
+      </default>
+      <default class="coupler">
+        <joint range="-1.57 0" armature="0.001" solimplimit="0.95 0.99 0.001" solreflimit="0.005 1" stiffness="500"/>
+      </default>
+      <default class="visual2">
+        <geom type="mesh" contype="0" conaffinity="0" group="2"/>
+      </default>
+      <default class="collision2">
+        <geom type="mesh" contype="1" conaffinity="1" condim="4" friction="10 0.1 0.1" solref="0.005 0.95" solimp="0.99 0.999 0.001" group="3"/>
+      </default>
+    </default>
+  </default>
+
+  <asset>
+    <material name="metal" rgba="0.58 0.58 0.58 1"/>
+    <material name="silicone_vis" rgba="0.1882 0.1882 0.1882 1"/>
+    <material name="gray" rgba="0.4627 0.4627 0.4627 1"/>
+    <material name="black" rgba="0.12 0.12 0.13 1"/>
+    <material name="factory_floor_mat" rgba="0.35 0.36 0.38 1" reflectance="0.10" specular="0.3" shininess="0.2"/>
+    <material name="stand_mat" rgba="0.5 0.52 0.55 1"/>
+    <material name="jelly_mat" rgba="1.000 0.650 0.200 0.40"/>
+
+    <mesh class="2f85" file="univesa_gripper/base_mount.stl"/>
+    <mesh class="2f85" file="univesa_gripper/base.stl"/>
+    <mesh class="2f85" file="univesa_gripper/driver.stl"/>
+    <mesh class="2f85" file="univesa_gripper/coupler.stl"/>
+    <mesh class="2f85" file="univesa_gripper/follower.stl"/>
+    <mesh class="2f85" file="univesa_gripper/spring_link.stl"/>
+
+    <mesh name="gripper_end"   file="univesa_gripper/Finger.stl"        scale="0.001 0.001 0.001"/>
+    <mesh name="silicone"      file="univesa_gripper/silicone.stl"      scale="0.001 0.001 0.001"/>
+    <mesh name="silicone_hull" file="univesa_gripper/silicone_hull.stl" scale="0.001 0.001 0.001"/>
+  </asset>
+
+  <worldbody>
+    <light diffuse="1 1 1" pos="0 0 2.5" dir="0 0 -1" directional="true"/>
+    <light diffuse="0.5 0.5 0.5" pos="1.5 0 1.5" dir="-1 0 -1" directional="true"/>
+    <geom name="floor" type="plane" size="1 1 0.1" material="factory_floor_mat" contype="1" conaffinity="1"/>
+
+    <body name="stand" pos="0 0 0.131">
+      <geom name="stand_pillar" type="cylinder" size="0.015 0.131" pos="0 0 -0.131" material="stand_mat"
+            contype="1" conaffinity="1"/>
+      <geom name="stand_top" type="box" size="0.03 0.03 0.004" material="stand_mat"
+            contype="3" conaffinity="3"/>
+    </body>
+
+    <body name="gripper_mount" pos="0 0 0.325">
+      <joint name="lift_joint" type="slide" axis="0 0 1" range="0 0.10" damping="8" armature="0.02"/>
+      <body name="2f85_base" quat="0 1 0 0" childclass="2f85">
+      <geom class="visual2" mesh="base_mount" material="black"/>
+      <geom class="collision2" mesh="base_mount"/>
+      <body name="gripper_base" pos="0 0 0.0038" quat="1 0 0 -1">
+        <inertial mass="0.777441" pos="0 -2.70394e-05 0.0354675" quat="1 -0.00152849 0 0"
+          diaginertia="0.000260285 0.000225381 0.000152708"/>
+        <geom class="visual2" mesh="base" material="black"/>
+        <geom class="collision2" mesh="base"/>
+        <site name="pinch" pos="0 0 0.145" type="sphere" group="5" rgba="0.9 0.9 0.9 1" size="0.005"/>
+
+        <body name="right_driver" pos="0 0.0306011 0.054904">
+          <inertial mass="0.00899563" pos="2.96931e-12 0.0177547 0.00107314" quat="0.681301 0.732003 0 0"
+            diaginertia="1.72352e-06 1.60906e-06 3.22006e-07"/>
+          <joint name="right_driver_joint" class="driver"/>
+          <geom class="visual2" mesh="driver" material="gray"/>
+          <geom class="collision2" mesh="driver"/>
+          <body name="right_coupler" pos="0 0.0315 -0.0041">
+            <inertial mass="0.0140974" pos="0 0.00301209 0.0232175" quat="0.705636 -0.0455904 0.0455904 0.705636"
+              diaginertia="4.16206e-06 3.52216e-06 8.88131e-07"/>
+            <joint name="right_coupler_joint" class="coupler"/>
+            <geom class="visual2" mesh="coupler" material="black"/>
+            <geom class="collision2" mesh="coupler"/>
+          </body>
+        </body>
+        <body name="right_spring_link" pos="0 0.0132 0.0609">
+          <inertial mass="0.0221642" pos="-8.65005e-09 0.0181624 0.0212658" quat="0.663403 -0.244737 0.244737 0.663403"
+            diaginertia="8.96853e-06 6.71733e-06 2.63931e-06"/>
+          <joint name="right_spring_link_joint" class="spring_link"/>
+          <geom class="visual2" mesh="spring_link" material="black"/>
+          <geom class="collision2" mesh="spring_link"/>
+          <body name="right_follower" pos="0 0.055 0.0375">
+            <inertial mass="0.0125222" pos="0 -0.011046 0.0124786" quat="1 0.1664 0 0"
+              diaginertia="2.67415e-06 2.4559e-06 6.02031e-07"/>
+            <joint name="right_follower_joint" class="follower"/>
+            <geom class="visual2" mesh="follower" material="black"/>
+            <geom class="collision2" mesh="follower"/>
+            <body name="right_finger" pos="0.014 -0.016046172 0.018608319"
+                  xyaxes="0 -0.012217001 0.999925370 -1 0 0">
+              <geom name="right_finger_tip" class="visual2" mesh="gripper_end" material="metal"/>
+              <geom class="visual2" mesh="gripper_end"/>
+
+              <body name="right_finger_pad" pos="0 0 0">
+                <geom name="right_silicone_visual" type="mesh" mesh="silicone" mass="0"
+                      contype="0" conaffinity="0" group="0" rgba="0.06 0.06 0.07 1"/>
+                <geom name="right_finger_silicone" type="mesh" mesh="silicone_hull" mass="0.02"
+                      contype="2" conaffinity="2" rgba="0.10 0.10 0.12 1" group="3"/>
+                <site name="right_tactile_site" pos="0.0372 0.014386 0.008639" xyaxes="0.042705 0.000016 0.999088 0 1 -0.000016" size="0.001" group="5"/>
+              </body>
+            </body>
+          </body>
+        </body>
+
+        <body name="left_driver" pos="0 -0.0306011 0.054904" quat="0 0 0 1">
+          <inertial mass="0.00899563" pos="0 0.0177547 0.00107314" quat="0.681301 0.732003 0 0"
+            diaginertia="1.72352e-06 1.60906e-06 3.22006e-07"/>
+          <joint name="left_driver_joint" class="driver"/>
+          <geom class="visual2" mesh="driver" material="gray"/>
+          <geom class="collision2" mesh="driver"/>
+          <body name="left_coupler" pos="0 0.0315 -0.0041">
+            <inertial mass="0.0140974" pos="0 0.00301209 0.0232175" quat="0.705636 -0.0455904 0.0455904 0.705636"
+              diaginertia="4.16206e-06 3.52216e-06 8.88131e-07"/>
+            <joint name="left_coupler_joint" class="coupler"/>
+            <geom class="visual2" mesh="coupler" material="black"/>
+            <geom class="collision2" mesh="coupler"/>
+          </body>
+        </body>
+        <body name="left_spring_link" pos="0 -0.0132 0.0609" quat="0 0 0 1">
+          <inertial mass="0.0221642" pos="-8.65005e-09 0.0181624 0.0212658" quat="0.663403 -0.244737 0.244737 0.663403"
+            diaginertia="8.96853e-06 6.71733e-06 2.63931e-06"/>
+          <joint name="left_spring_link_joint" class="spring_link"/>
+          <geom class="visual2" mesh="spring_link" material="black"/>
+          <geom class="collision2" mesh="spring_link"/>
+          <body name="left_follower" pos="0 0.055 0.0375">
+            <inertial mass="0.0125222" pos="0 -0.011046 0.0124786" quat="1 0.1664 0 0"
+              diaginertia="2.67415e-06 2.4559e-06 6.02031e-07"/>
+            <joint name="left_follower_joint" class="follower"/>
+            <geom class="visual2" mesh="follower" material="black"/>
+            <geom class="collision2" mesh="follower"/>
+            <body name="left_finger" pos="0.014 -0.015271377 0.018806880"
+                  xyaxes="0 -0.033155178 0.999450216 -1 0 0">
+              <geom name="left_finger_tip" class="visual2" mesh="gripper_end" material="metal"/>
+              <geom class="visual2" mesh="gripper_end"/>
+
+              <body name="left_finger_pad" pos="0 0 0">
+                <geom name="left_silicone_visual" type="mesh" mesh="silicone" mass="0"
+                      contype="0" conaffinity="0" group="0" rgba="0.06 0.06 0.07 1"/>
+                <geom name="left_finger_silicone" type="mesh" mesh="silicone_hull" mass="0.02"
+                      contype="2" conaffinity="2" rgba="0.10 0.10 0.12 1" group="3"/>
+                <site name="left_tactile_site" pos="0.0372 0.014386 0.008639" xyaxes="0.042705 0.000016 0.999088 0 1 -0.000016" size="0.001" group="5"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      </body>
+    </body>
+
+    <flexcomp type="grid" name="jelly" dim="3" count="4 4 4" spacing="0.01 0.01 0.01"
+              pos="0 0 0.155" mass="0.01" radius="0.0015" rgba="1.000 0.650 0.200 0.40">
+      <contact selfcollide="none" contype="3" conaffinity="3" condim="6" friction="2.0 0.1 0.1"/>
+      <edge damping="0.05" equality="true" solref="0.004 1.0"/>
+    </flexcomp>
+
+  </worldbody>
+
+  <contact>
+    <exclude body1="gripper_base" body2="left_driver"/>
+    <exclude body1="gripper_base" body2="right_driver"/>
+    <exclude body1="gripper_base" body2="left_spring_link"/>
+    <exclude body1="gripper_base" body2="right_spring_link"/>
+    <exclude body1="right_coupler" body2="right_follower"/>
+    <exclude body1="left_coupler" body2="left_follower"/>
+    <exclude body1="left_finger" body2="right_finger"/>
+    <exclude body1="left_finger_pad" body2="right_finger_pad"/>
+    <exclude body1="left_finger" body2="right_finger_pad"/>
+    <exclude body1="right_finger" body2="left_finger_pad"/>
+  </contact>
+
+  <tendon>
+    <fixed name="split">
+      <joint joint="right_driver_joint" coef="0.5"/>
+      <joint joint="left_driver_joint" coef="0.5"/>
+    </fixed>
+  </tendon>
+
+  <equality>
+    <connect anchor="0 0 0" body1="right_follower" body2="right_coupler" solimp="0.95 0.99 0.001" solref="0.005 1"/>
+    <connect anchor="0 0 0" body1="left_follower" body2="left_coupler" solimp="0.95 0.99 0.001" solref="0.005 1"/>
+    <joint joint1="right_driver_joint" joint2="left_driver_joint" polycoef="0 1 0 0 0" solimp="0.95 0.99 0.001" solref="0.005 1"/>
+  </equality>
+
+  <actuator>
+    <general class="2f85" name="fingers_actuator" tendon="split" forcerange="-1 1" ctrlrange="0 255"
+      gainprm="0.3137255 0 0" biasprm="0 -100 -10"/>
+    <position name="lift_actuator" joint="lift_joint" ctrlrange="0 0.10" kp="800" kv="40" forcerange="-50 50"/>
+  </actuator>
+
+  <sensor>
+    <plugin name="right_finger_tactile" plugin="tip.tactile.universa" objtype="site" objname="right_tactile_site">
+      <config key="npoints" value="80"/>
+      <config key="coords" value="-8.75 -11.25 -6.25 -11.25 -3.75 -11.25 -1.25 -11.25 1.25 -11.25 3.75 -11.25 6.25 -11.25 8.75 -11.25 -8.75 -8.75 -6.25 -8.75 -3.75 -8.75 -1.25 -8.75 1.25 -8.75 3.75 -8.75 6.25 -8.75 8.75 -8.75 -8.75 -6.25 -6.25 -6.25 -3.75 -6.25 -1.25 -6.25 1.25 -6.25 3.75 -6.25 6.25 -6.25 8.75 -6.25 -8.75 -3.75 -6.25 -3.75 -3.75 -3.75 -1.25 -3.75 1.25 -3.75 3.75 -3.75 6.25 -3.75 8.75 -3.75 -8.75 -1.25 -6.25 -1.25 -3.75 -1.25 -1.25 -1.25 1.25 -1.25 3.75 -1.25 6.25 -1.25 8.75 -1.25 -8.75 1.25 -6.25 1.25 -3.75 1.25 -1.25 1.25 1.25 1.25 3.75 1.25 6.25 1.25 8.75 1.25 -8.75 3.75 -6.25 3.75 -3.75 3.75 -1.25 3.75 1.25 3.75 3.75 3.75 6.25 3.75 8.75 3.75 -8.75 6.25 -6.25 6.25 -3.75 6.25 -1.25 6.25 1.25 6.25 3.75 6.25 6.25 6.25 8.75 6.25 -8.75 8.75 -6.25 8.75 -3.75 8.75 -1.25 8.75 1.25 8.75 3.75 8.75 6.25 8.75 8.75 8.75 -8.75 11.25 -6.25 11.25 -3.75 11.25 -1.25 11.25 1.25 11.25 3.75 11.25 6.25 11.25 8.75 11.25"/>
+      <config key="full_scale" value="2.0"/>
+      <config key="trigger_force" value="0.005"/>
+      <config key="seed" value="1"/>
+    </plugin>
+    <plugin name="left_finger_tactile" plugin="tip.tactile.universa" objtype="site" objname="left_tactile_site">
+      <config key="npoints" value="80"/>
+      <config key="coords" value="-8.75 -11.25 -6.25 -11.25 -3.75 -11.25 -1.25 -11.25 1.25 -11.25 3.75 -11.25 6.25 -11.25 8.75 -11.25 -8.75 -8.75 -6.25 -8.75 -3.75 -8.75 -1.25 -8.75 1.25 -8.75 3.75 -8.75 6.25 -8.75 8.75 -8.75 -8.75 -6.25 -6.25 -6.25 -3.75 -6.25 -1.25 -6.25 1.25 -6.25 3.75 -6.25 6.25 -6.25 8.75 -6.25 -8.75 -3.75 -6.25 -3.75 -3.75 -3.75 -1.25 -3.75 1.25 -3.75 3.75 -3.75 6.25 -3.75 8.75 -3.75 -8.75 -1.25 -6.25 -1.25 -3.75 -1.25 -1.25 -1.25 1.25 -1.25 3.75 -1.25 6.25 -1.25 8.75 -1.25 -8.75 1.25 -6.25 1.25 -3.75 1.25 -1.25 1.25 1.25 1.25 3.75 1.25 6.25 1.25 8.75 1.25 -8.75 3.75 -6.25 3.75 -3.75 3.75 -1.25 3.75 1.25 3.75 3.75 3.75 6.25 3.75 8.75 3.75 -8.75 6.25 -6.25 6.25 -3.75 6.25 -1.25 6.25 1.25 6.25 3.75 6.25 6.25 6.25 8.75 6.25 -8.75 8.75 -6.25 8.75 -3.75 8.75 -1.25 8.75 1.25 8.75 3.75 8.75 6.25 8.75 8.75 8.75 -8.75 11.25 -6.25 11.25 -3.75 11.25 -1.25 11.25 1.25 11.25 3.75 11.25 6.25 11.25 8.75 11.25"/>
+      <config key="full_scale" value="2.0"/>
+      <config key="trigger_force" value="0.005"/>
+      <config key="seed" value="2"/>
+    </plugin>
+  </sensor>
+</mujoco>
